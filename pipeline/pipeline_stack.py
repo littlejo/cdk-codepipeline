@@ -63,10 +63,11 @@ class PipelineStack(core.Stack):
 
     def CdkDeployProject(self, name:str, stage:str) :
         return codebuild.PipelineProject(self, name,
-            build_spec=codebuild.BuildSpec.from_object(dict(
-            version="0.2",
-            phases=dict(
-                install=dict(commands=install_commands),
-                build=dict(commands=deploy_commands(stage))),
-                environment=dict(buildImage=codebuild.LinuxBuildImage.STANDARD_2_0)
-            )))
+                                         build_spec=codebuild.BuildSpec.from_object(dict(
+                                         version="0.2",
+                                         phases=dict(
+                                                     install=dict(commands=install_commands),
+                                                     build=dict(commands=deploy_commands(stage)),
+                                                    ),
+                                         environment=dict(buildImage=codebuild.LinuxBuildImage.STANDARD_2_0),
+                                         )))
