@@ -43,19 +43,21 @@ class PipelineStack(core.Stack):
         return codepipeline.Pipeline(self, name,
                                      stages=[
                                          codepipeline.StageProps(stage_name="Source",
-                                             actions=[
-                                                 codepipeline_actions.CodeCommitSourceAction(
-                                                     action_name="CodeCommit_Source",
-                                                     repository=repo,
-                                                     branch=branch,
-                                                     output=src)]),
+                                                                 actions=[
+                                                                         codepipeline_actions.CodeCommitSourceAction(
+                                                                         action_name="CodeCommit_Source",
+                                                                         repository=repo,
+                                                                         branch=branch,
+                                                                         output=src
+                                                                         )]),
                                          codepipeline.StageProps(stage_name="Deploy",
-                                             actions=[
-                                                 codepipeline_actions.CodeBuildAction(
-                                                     action_name="CdkDeploy",
-                                                     project=cdk_deploy,
-                                                     input=src,
-                                                     outputs=[output])])
+                                                                 actions=[
+                                                                         codepipeline_actions.CodeBuildAction(
+                                                                         action_name="CdkDeploy",
+                                                                         project=cdk_deploy,
+                                                                         input=src,
+                                                                         outputs=[output]
+                                                                         )]),
                                          ]
                                     )
 
