@@ -9,6 +9,10 @@ from aws_cdk import (
 
 pipeline_name = 'repo-gpr-lztemplate-pipeline'
 codecommit_repo_name = 'repo-gpr-lztemplate-environment'
+install_commands = 'npm install -g aws-cdk ; pip install -r requirements.txt'
+
+def deploy_commands(stage):
+    return ["cdk bootstrap", f"cdk deploy --require-approval never -c stage={stage}"]
 
 class PipelineStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
@@ -34,11 +38,8 @@ class PipelineStack(core.Stack):
             build_spec=codebuild.BuildSpec.from_object(dict(
             version="0.2",
             phases=dict(
-                install=dict(
-                    commands="npm install -g aws-cdk ; pip install -r requirements.txt"),
-                build=dict(commands=[
-                    "cdk bootstrap",
-                    "cdk deploy --require-approval never -c stage={}".format(stage)])),
+                install=dict(commands=install_commands),
+                build=dict(commands=deploy_commands(stage))),
                 environment=dict(buildImage=codebuild.LinuxBuildImage.STANDARD_2_0)
             )))
 
