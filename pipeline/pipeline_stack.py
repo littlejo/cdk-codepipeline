@@ -4,14 +4,32 @@ from aws_cdk import (
     aws_codecommit as codecommit,
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
-    aws_iam     as iam, 
+    aws_iam as iam,
 )
 
+pipeline_name = 'repo-gpr-lztemplate-pipeline'
+codecommit_repo_name = 'repo-gpr-lztemplate-environment'
 
 class PipelineStack(core.Stack):
+    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+        super().__init__(scope, id, **kwargs)
 
-    def CdkDeployProject( self, name:str, stage:str) :
+        update_pipe = self.CdkDeploySimplePipeline( "Pipeline Update" , 
+                                                   codecommit.Repository.from_repository_name(self, "ImportedRepoUpdatePipe", pipeline_name),
+                                                   "master",
+                                                   codepipeline.Artifact("pipeline"), 
+                                                   codepipeline.Artifact("pipeline-output")
+                                                  )
 
+        # Pipeline for each branches
+        for branch in ["master","dev"] :
+            environment_pipe_master =  self.CdkDeploySimplePipeline( "Pipeline Deploy Environment ({})".format(branch) ,
+                                                                     repo = codecommit.Repository.from_repository_name(self, "ImportedRepoEnvironment-{}".format(branch), codecommit_repo_name),
+                                                                     branch = branch,
+                                                                     src = codepipeline.Artifact("environment-{}".format(branch)), 
+                                                                     output = codepipeline.Artifact("environment-output-{}".format(branch)))
+
+    def CdkDeployProject(self, name:str, stage:str) :
         return codebuild.PipelineProject(self, name,
             build_spec=codebuild.BuildSpec.from_object(dict(
             version="0.2",
@@ -25,9 +43,7 @@ class PipelineStack(core.Stack):
             )))
 
     def CdkDeploySimplePipeline( self , name:str , repo, branch:str, src:str, output) :
-        
         cdk_deploy = self.CdkDeployProject("CDK Deploy {}".format(name),stage=branch)
-
         cdk_deploy.role.add_to_policy(iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 resources=["*"],
@@ -52,25 +68,6 @@ class PipelineStack(core.Stack):
                 ]
             )
 
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
-
-        # The code that defines your stack goes here 
-    
-        update_pipe =  self.CdkDeploySimplePipeline( "Pipeline Update" , 
-            codecommit.Repository.from_repository_name(self, "ImportedRepoUpdatePipe","repo-gpr-lztemplate-pipeline"),
-            "master",
-            codepipeline.Artifact("pipeline"), 
-            codepipeline.Artifact("pipeline-output"))
-
-        # Pipeline for each branches
-
-        for branch in ["master","dev"] :
-            environment_pipe_master =  self.CdkDeploySimplePipeline( "Pipeline Deploy Environment ({})".format(branch) ,
-                repo = codecommit.Repository.from_repository_name(self, "ImportedRepoEnvironment-{}".format(branch),"repo-gpr-lztemplate-environment"),
-                branch = branch, 
-                src = codepipeline.Artifact("environment-{}".format(branch)), 
-                output = codepipeline.Artifact("environment-output-{}".format(branch)))
 
 
 
