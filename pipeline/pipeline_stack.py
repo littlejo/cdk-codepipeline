@@ -71,5 +71,5 @@ class PipelineStack(core.Stack):
                                                      build=dict(commands=deploy_commands(stage)),
                                                     ),
                                          environment=dict(buildImage=codebuild.LinuxBuildImage.STANDARD_2_0),
-                                         environment_variable=dict(["environment", stage]),
+                                         environment_variable=dict([["environment", stage]]),
                                          )))
