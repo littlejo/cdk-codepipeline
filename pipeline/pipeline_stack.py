@@ -35,7 +35,7 @@ class PipelineStack(core.Stack):
                                                                     )
 
     def CdkDeploySimplePipeline(self, name:str, repo, branch:str, src:str, output):
-        cdk_deploy = self.CdkDeployProject(f"CDK Deploy {name}", stage=branch)
+        cdk_deploy = self.CdkDeployProject(f"{name}-CDKDeploy", stage=branch)
         cdk_deploy.role.add_to_policy(iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 resources=["*"],
@@ -71,4 +71,5 @@ class PipelineStack(core.Stack):
                                                      build=dict(commands=deploy_commands(stage)),
                                                     ),
                                          environment=dict(buildImage=codebuild.LinuxBuildImage.STANDARD_2_0),
+                                         environment_variable=dict(["environment", stage]),
                                          )))
