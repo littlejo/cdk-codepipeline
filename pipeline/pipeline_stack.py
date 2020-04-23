@@ -26,15 +26,15 @@ class PipelineStack(core.Stack):
                                                   )
 
         # Pipeline for each branches
-        for branch in ["master","dev"] :
-            environment_pipe_master =  self.CdkDeploySimplePipeline( "Pipeline Deploy Environment ({})".format(branch) ,
-                                                                     repo = codecommit.Repository.from_repository_name(self, "ImportedRepoEnvironment-{}".format(branch), codecommit_repo_name),
+        for branch in ["master", "dev"] :
+            environment_pipe_master =  self.CdkDeploySimplePipeline( f"Pipeline Deploy Environment {branch}",
+                                                                     repo = codecommit.Repository.from_repository_name(self, f"ImportedRepoEnvironment-{branch}"), codecommit_repo_name),
                                                                      branch = branch,
-                                                                     src = codepipeline.Artifact("environment-{}".format(branch)), 
-                                                                     output = codepipeline.Artifact("environment-output-{}".format(branch)))
+                                                                     src = codepipeline.Artifact(f"environment-{branch}"),
+                                                                     output = codepipeline.Artifact(f"environment-output-{branch}")
 
     def CdkDeploySimplePipeline(self, name:str, repo, branch:str, src:str, output):
-        cdk_deploy = self.CdkDeployProject("CDK Deploy {}".format(name),stage=branch)
+        cdk_deploy = self.CdkDeployProject(f"CDK Deploy {name}", stage=branch)
         cdk_deploy.role.add_to_policy(iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 resources=["*"],
