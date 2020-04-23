@@ -18,7 +18,7 @@ class PipelineStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        update_pipe = self.CdkDeploySimplePipeline( "Pipeline Update" , 
+        update_pipe = self.CdkDeploySimplePipeline("CodePipeline",
                                                    codecommit.Repository.from_repository_name(self, "ImportedRepoUpdatePipe", codecommit_pipeline_name),
                                                    "master",
                                                    codepipeline.Artifact("pipeline"), 
@@ -27,11 +27,12 @@ class PipelineStack(core.Stack):
 
         # Pipeline for each branches
         for branch in ["master", "dev"] :
-            environment_pipe_master =  self.CdkDeploySimplePipeline( f"Pipeline Deploy Environment {branch}",
-                                                                     repo = codecommit.Repository.from_repository_name(self, f"ImportedRepoEnvironment-{branch}"), codecommit_repo_name),
-                                                                     branch = branch,
-                                                                     src = codepipeline.Artifact(f"environment-{branch}"),
-                                                                     output = codepipeline.Artifact(f"environment-output-{branch}")
+            environment_pipe_master =  self.CdkDeploySimplePipeline(f"Infra-{branch}",
+                                                                    repo = codecommit.Repository.from_repository_name(self, f"ImportedRepoEnvironment-{branch}", codecommit_repo_name),
+                                                                    branch = branch,
+                                                                    src = codepipeline.Artifact(f"environment-{branch}"),
+                                                                    output = codepipeline.Artifact(f"environment-output-{branch}")
+                                                                    )
 
     def CdkDeploySimplePipeline(self, name:str, repo, branch:str, src:str, output):
         cdk_deploy = self.CdkDeployProject(f"CDK Deploy {name}", stage=branch)
