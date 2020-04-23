@@ -4,9 +4,7 @@ from aws_cdk import (
     aws_codecommit as codecommit,
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
-    aws_lambda as lambda_,
     aws_iam     as iam, 
-    aws_s3 as s3
 )
 
 
