@@ -33,6 +33,32 @@ class PipelineStack(core.Stack):
                                                                      src = codepipeline.Artifact("environment-{}".format(branch)), 
                                                                      output = codepipeline.Artifact("environment-output-{}".format(branch)))
 
+    def CdkDeploySimplePipeline(self, name:str, repo, branch:str, src:str, output):
+        cdk_deploy = self.CdkDeployProject("CDK Deploy {}".format(name),stage=branch)
+        cdk_deploy.role.add_to_policy(iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
+                actions=["CloudFormation:*","ec2:*","s3:*"]))
+
+        return codepipeline.Pipeline(self, name,
+                                     stages=[
+                                         codepipeline.StageProps(stage_name="Source",
+                                             actions=[
+                                                 codepipeline_actions.CodeCommitSourceAction(
+                                                     action_name="CodeCommit_Source",
+                                                     repository=repo,
+                                                     branch=branch,
+                                                     output=src)]),
+                                         codepipeline.StageProps(stage_name="Deploy",
+                                             actions=[
+                                                 codepipeline_actions.CodeBuildAction(
+                                                     action_name="CdkDeploy",
+                                                     project=cdk_deploy,
+                                                     input=src,
+                                                     outputs=[output])])
+                                         ]
+                                    )
+
     def CdkDeployProject(self, name:str, stage:str) :
         return codebuild.PipelineProject(self, name,
             build_spec=codebuild.BuildSpec.from_object(dict(
@@ -42,33 +68,3 @@ class PipelineStack(core.Stack):
                 build=dict(commands=deploy_commands(stage))),
                 environment=dict(buildImage=codebuild.LinuxBuildImage.STANDARD_2_0)
             )))
-
-    def CdkDeploySimplePipeline( self , name:str , repo, branch:str, src:str, output) :
-        cdk_deploy = self.CdkDeployProject("CDK Deploy {}".format(name),stage=branch)
-        cdk_deploy.role.add_to_policy(iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                resources=["*"],
-                actions=["CloudFormation:*","ec2:*","s3:*"]))
-
-        return codepipeline.Pipeline(self, name,
-            stages=[
-                codepipeline.StageProps(stage_name="Source",
-                    actions=[
-                        codepipeline_actions.CodeCommitSourceAction(
-                            action_name="CodeCommit_Source",
-                            repository=repo,
-                            branch=branch,
-                            output=src)]),
-                codepipeline.StageProps(stage_name="Deploy",
-                    actions=[
-                        codepipeline_actions.CodeBuildAction(
-                            action_name="CdkDeploy",
-                            project=cdk_deploy,
-                            input=src,
-                            outputs=[output])])
-                ]
-            )
-
-
-
-
