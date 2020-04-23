@@ -7,7 +7,7 @@ from aws_cdk import (
     aws_iam as iam,
 )
 
-pipeline_name = 'repo-gpr-lztemplate-pipeline'
+codecommit_pipeline_name = 'repo-gpr-lztemplate-pipeline'
 codecommit_repo_name = 'repo-gpr-lztemplate-environment'
 install_commands = 'npm install -g aws-cdk ; pip install -r requirements.txt'
 
@@ -19,7 +19,7 @@ class PipelineStack(core.Stack):
         super().__init__(scope, id, **kwargs)
 
         update_pipe = self.CdkDeploySimplePipeline( "Pipeline Update" , 
-                                                   codecommit.Repository.from_repository_name(self, "ImportedRepoUpdatePipe", pipeline_name),
+                                                   codecommit.Repository.from_repository_name(self, "ImportedRepoUpdatePipe", codecommit_pipeline_name),
                                                    "master",
                                                    codepipeline.Artifact("pipeline"), 
                                                    codepipeline.Artifact("pipeline-output")
